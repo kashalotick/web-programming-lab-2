@@ -20,7 +20,7 @@
       context: ./frontend
       dockerfile: Dockerfile
     environment:
-      - API_URL=http://backend:8080
+      - NUXT_PUBLIC_API_BASE=http://localhost:8080/api
     networks:
       - lab-network
     depends_on:
