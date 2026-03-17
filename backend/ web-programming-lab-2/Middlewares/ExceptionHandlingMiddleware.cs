@@ -22,7 +22,7 @@ public class ExceptionHandlingMiddleware
         }
         catch (BaseException ex)
         {
-            _logger.LogWarning(ex, "Business exception: {Code}", ex.Code);
+            _logger.LogWarning(ex.Message, "Business exception: {Code}", ex.Code);
             await WriteErrorResponse(context, (int)ex.StatusCode, ex.Message, ex.Code);
         }
         catch (Exception ex)
