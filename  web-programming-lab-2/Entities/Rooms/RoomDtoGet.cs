@@ -1,6 +1,8 @@
-﻿namespace web_programming_lab_2.Models;
+﻿using web_programming_lab_2.Entities.Reservations;
 
-public class Room
+namespace web_programming_lab_2.Entities.Rooms;
+
+public record RoomDtoGet
 {
     public int Id { get; set; }
     public string Name { get; set; }
