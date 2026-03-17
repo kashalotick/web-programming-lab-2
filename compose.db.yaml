@@ -1,0 +1,23 @@
+﻿services:
+  postgres-db:
+    image: postgres:latest
+    container_name: lab-db
+    env_file:
+      - backend/.env
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    networks:
+      - lab-network
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+  
+networks:
+  lab-network:
+    external: true
+    
+volumes:
+  db-data:
