@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using web_programming_lab_2.Entities.Reservations;
 using web_programming_lab_2.Entities.Rooms;
+using web_programming_lab_2.Exceptions;
 
 namespace web_programming_lab_2.Services;
 
@@ -18,18 +19,20 @@ public class RoomService
         _dbContext = dbContext;
         _mapper = mapper;
     }
-    public async Task<Room?> GetByIdAsync(int id)
+
+    public async Task<Room> GetByIdAsync(int id)
     {
         var room = await _dbContext.Rooms.FindAsync(id);
 
-        return room;
+        return room ?? throw new NotFoundException<Room>(id);
     }
 
-    public async Task<IEnumerable<ReservationDtoGet>?> GetReservationsAsync(int id)
+    public async Task<IEnumerable<ReservationDtoGet>> GetReservationsAsync(int id)
     {
         var room = await _dbContext.Rooms.Include(r => r.Reservations).FirstOrDefaultAsync(r => r.Id == id);
+
         var reservations = room?.Reservations?.OrderBy(r => r.CheckIn).Select(r => _mapper.Map<ReservationDtoGet>(r));
-        return reservations;
+        return reservations ?? throw new NotFoundException<Room>(id);
     }
 
     public async Task<IEnumerable<RoomDtoGet>> GetAllAsync()

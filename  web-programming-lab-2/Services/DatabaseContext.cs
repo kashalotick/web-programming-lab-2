@@ -21,15 +21,15 @@ public class DatabaseContext : DbContext
         modelBuilder.Entity<Room>()
             .ToTable(t =>
             {
-                t.HasCheckConstraint("CK_positive_price", "price > 0");
-                t.HasCheckConstraint("CK_positive_capacity", "capacity > 0");
+                t.HasCheckConstraint("ck_positive_price", "price >= 0");
+                t.HasCheckConstraint("ck_positive_capacity", "capacity >= 0");
             });
 
 
         modelBuilder.Entity<Reservation>()
             .ToTable(t =>
             {
-                t.HasCheckConstraint("CK_checkout_after_checkin", "checkout > checkin");
+                t.HasCheckConstraint("ck_checkout_after_checkin", "check_out > check_in");
             });
 
         modelBuilder.Entity<Reservation>()

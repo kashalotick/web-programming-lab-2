@@ -16,48 +16,35 @@ public class ReservationsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] ReservationDtoCreate dto)
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ReservationDtoGet>> Create([FromBody] ReservationDtoCreate dto)
     {
-        try
-        {
-            var result = await _reservationService.CreateReservation(dto);
+        var result = await _reservationService.CreateReservation(dto);
+        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+    }
 
-
-            if (result == null)
-            {
-                return NotFound(new
-                {
-                    message = $"Room with id {dto.RoomId} not found."
-                });
-            }
-
-            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
-        }
-        catch (Exception e)
-        {
-            return BadRequest(new { message = e.Message });
-        }
+    [HttpPost("{id}/cancel")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> Cancel(int id)
+    {
+        await _reservationService.CancelReservation(id);
+        return NoContent();
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<ActionResult<IEnumerable<ReservationDtoGet>>> GetAll()
     {
         var result = await _reservationService.GetAllAsync();
         return Ok(result);
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(int id)
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ReservationDtoGet>> GetById(int id)
     {
         var result = await _reservationService.GetByIdAsync(id);
-        if (result == null)
-        {
-            return NotFound(new
-            {
-                message = $"Reservation with id {id} not found."
-            });
-        }
-
         return Ok(result);
     }
 }

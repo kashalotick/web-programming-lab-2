@@ -2,6 +2,8 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using web_programming_lab_2.Entities.Reservations;
+using web_programming_lab_2.Entities.Rooms;
+using web_programming_lab_2.Exceptions;
 
 namespace web_programming_lab_2.Services;
 
@@ -19,28 +21,28 @@ public class ReservationService
         _mapper = mapper;
     }
 
-    public async Task<ReservationDtoGet?> CreateReservation(ReservationDtoCreate dtoCreate)
+    public async Task<ReservationDtoGet> CreateReservation(ReservationDtoCreate dtoCreate)
     {
         var roomExists = await _dbContext.Rooms.AnyAsync(r => r.Id == dtoCreate.RoomId);
-    
+
         if (!roomExists)
         {
-            return null; 
+            throw new NotFoundException<Room>(dtoCreate.RoomId);
         }
 
         var hasOverlap = await _dbContext.Reservations
-            .AnyAsync(r => r.RoomId == dtoCreate.RoomId && 
-                           r.CheckIn < dtoCreate.CheckOut && 
-                           r.CheckOut > dtoCreate.CheckIn);
+            .AnyAsync(r =>
+                r.RoomId == dtoCreate.RoomId && r.CheckIn < dtoCreate.CheckOut && r.CheckOut > dtoCreate.CheckIn);
 
         if (hasOverlap)
         {
-            throw new Exception($"Room with id {dtoCreate.RoomId} has overlap");
+            throw new ConflictException($"Room {dtoCreate.RoomId} is already booked for these dates.","ROOM_BOOKING_OVERLAP");
+            
         }
 
         var reservation = _mapper.Map<Reservation>(dtoCreate);
         _dbContext.Reservations.Add(reservation);
-        
+
         await _dbContext.SaveChangesAsync();
 
         var output = _mapper.Map<ReservationDtoGet>(reservation);
@@ -58,5 +60,19 @@ public class ReservationService
     {
         var reservation = await _dbContext.Reservations.FindAsync(id);
         return _mapper.Map<ReservationDtoGet>(reservation);
+    }
+
+    public async Task CancelReservation(int id)
+    {
+        var reservation = await _dbContext.Reservations.FindAsync(id);
+        if (reservation == null)
+        {
+            throw new NotFoundException<Reservation>(id);
+        }
+
+        if (!reservation.IsActive) return;
+
+        reservation.IsActive = false;
+        await _dbContext.SaveChangesAsync();
     }
 }

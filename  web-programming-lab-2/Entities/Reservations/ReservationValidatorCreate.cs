@@ -10,7 +10,7 @@ public class ReservationValidatorCreate : AbstractValidator<ReservationDtoCreate
             .GreaterThanOrEqualTo(DateOnly.FromDateTime(DateTime.Today))
             .WithMessage("Check-in date must be greater than today's date.");
         RuleFor(x => x.CheckOut)
-            .GreaterThanOrEqualTo(x => x.CheckIn)
+            .GreaterThan(x => x.CheckIn)
             .WithMessage("Check-out date must be greater than check-in date.");
     }
 }
