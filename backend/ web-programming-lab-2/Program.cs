@@ -17,8 +17,18 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         Env.Load("../");
-
-
+        
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("DevCorsPolicy", policy =>
+            {
+                policy.WithOrigins("http://localhost:3000") // Адреса твого Nuxt фронтенда
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials(); // Потрібно, якщо передаєш куки або Auth заголовки
+            });
+        });
+        
         // swagger
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
@@ -49,6 +59,9 @@ public class Program
 
         var app = builder.Build();
 
+        app.UseRouting();
+        app.UseCors("DevCorsPolicy");
+        
         // middlewares
         app.UseMiddleware<ExceptionHandlingMiddleware>();
         
@@ -59,6 +72,8 @@ public class Program
             app.UseSwaggerUI();
         }
 
+
+        
         app.UseHttpsRedirection();
         app.UseAuthorization();
         app.MapControllers();
