@@ -141,12 +141,13 @@ function onEscape(event: KeyboardEvent) {
   }
 }
 
-const calendarStyle = ref({ top: '0px', left: '0px' });
+const calendarStyle = ref({top: '0px', left: '0px'});
 watch(() => activeField, (val) => {
   if (val) {
     nextTick(updatePosition);
   }
 });
+
 function updatePosition() {
   const target = currentTarget.value;
   if (target) {

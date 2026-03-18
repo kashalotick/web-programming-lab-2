@@ -7,6 +7,18 @@ export interface Reservation {
   isActive: boolean;
   grandTotal: number;
 }
+// export interface Reservation {
+//   id: number;
+//   roomId: number;
+//   guestId: number;
+//   checkIn: Date;
+//   checkOut: Date;
+//   createdAt: Date;
+//   isActive: boolean;
+//   grandTotal: number;
+// }
+
+
 
 export interface ReservationDtoGet {
   id: number;
@@ -29,3 +41,5 @@ export function restore(dto: ReservationDtoGet): Reservation {
     grandTotal: dto.grandTotal,
   }
 }
+
+
