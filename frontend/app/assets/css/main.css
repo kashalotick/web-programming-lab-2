@@ -1,0 +1,78 @@
+:root {
+    --font-heading: "Kurale", serif;
+    --font-description: "Montserrat", sans-serif;
+
+    --white: #ffffff;
+    --black: #000000;
+
+    --background-light: #FFFFFF;
+    --background: #FFFBF5;
+    --background-dark: #FFF2D4;
+
+    --accent-light: #F9C492;
+    --accent: #FB9558;
+    --accent-dark: #D26B2E;
+
+    --complementary-light: #D4ED83;
+    --complementary: #99B738;
+    --complementary-dark: #586D13;
+
+    --text: #202225;
+
+    --gray: #DBDBDB;
+    --gray-dark: #C0C0C0;
+
+
+    --info: #17a2b8;
+    --success: #28a745;
+    --warning: #ffc107;
+    --error: #dc3545;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+
+button.style-1, button.style-2 {
+    font-family: var(--font-description), sans-serif;
+    font-size: .875rem;
+    font-weight: 600;
+    letter-spacing: .06em;
+
+    border-radius: 12px;
+    padding: .85rem 1.5rem;
+    cursor: pointer;
+    transition: opacity .2s, transform .15s;
+    width: 100%;
+}
+
+
+button.style-1 {
+    color: #fff;
+    background: linear-gradient(135deg, #FB9558 0%, #D26B2E 100%);
+    border: none;
+
+    &:hover {
+        opacity: .8;
+    }
+
+    &:active {
+        opacity: 1;
+    }
+}
+
+
+button.style-2 {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+
+    &:hover {
+        border-color: var(--accent-dark);
+    }
+
+    &:active {
+        border-color: var(--accent);
+    }
+}
