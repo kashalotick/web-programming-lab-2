@@ -1,11 +1,17 @@
 <script setup lang="ts">
 const props = defineProps<{
-  path: string[]
+  heading: string
+  badges: string[]
 }>()
 </script>
 
 <template>
+  <slot name="secondary">
 
+  </slot>
+  <slot name="buttons">
+
+  </slot>
 </template>
 
 <style scoped>
