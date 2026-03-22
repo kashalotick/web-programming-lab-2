@@ -43,7 +43,7 @@ const [roomId, roomIdAttrs] = defineField('roomId')
 const [checkIn, checkInAttrs] = defineField('checkIn')
 const [checkOut, checkOutAttrs] = defineField('checkOut')
 const [name, nameAttrs] = defineField('name')
-const [phone, phoneAttrs] = defineField('phone')
+const [phone, phoneAttrs] = defineField('phone') // TODO: replace with email
 const [guests, guestsAttrs] = defineField('guests')
 
 const nights = ref(0)

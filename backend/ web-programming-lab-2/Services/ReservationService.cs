@@ -21,33 +21,34 @@ public class ReservationService
         _mapper = mapper;
     }
 
-    public async Task<ReservationDtoGet> CreateReservation(ReservationDtoCreate dtoCreate)
+    public async Task<ReservationDtoGet> CreateReservation(ReservationCreateRequest createRequest)
     {
-        var roomExists = await _dbContext.Rooms.AnyAsync(r => r.Id == dtoCreate.RoomId);
-
-        if (!roomExists)
-        {
-            throw new NotFoundException<Room>(dtoCreate.RoomId);
-        }
-
-        var hasOverlap = await _dbContext.Reservations
-            .AnyAsync(r =>
-                r.RoomId == dtoCreate.RoomId && r.CheckIn < dtoCreate.CheckOut && r.CheckOut > dtoCreate.CheckIn);
-
-        if (hasOverlap)
-        {
-            throw new ConflictException($"Room {dtoCreate.RoomId} is already booked for these dates.","ROOM_BOOKING_OVERLAP");
-            
-        }
-
-        var reservation = _mapper.Map<Reservation>(dtoCreate);
-        _dbContext.Reservations.Add(reservation);
-
-        await _dbContext.SaveChangesAsync();
-
-        var output = _mapper.Map<ReservationDtoGet>(reservation);
-
-        return output;
+        // var roomExists = await _dbContext.Rooms.AnyAsync(r => r.Id == createRequest.RoomId);
+        //
+        // if (!roomExists)
+        // {
+        //     throw new NotFoundException<Room>(createRequest.RoomId);
+        // }
+        //
+        // var hasOverlap = await _dbContext.Reservations
+        //     .AnyAsync(r =>
+        //         r.RoomId == createRequest.RoomId && r.CheckIn < createRequest.CheckOut && r.CheckOut > createRequest.CheckIn);
+        //
+        // if (hasOverlap)
+        // {
+        //     throw new ConflictException($"Room {createRequest.RoomId} is already booked for these dates.","ROOM_BOOKING_OVERLAP");
+        //     
+        // }
+        //
+        // var reservation = _mapper.Map<Reservation>(createRequest);
+        // _dbContext.Reservations.Add(reservation);
+        //
+        // await _dbContext.SaveChangesAsync();
+        //
+        // var output = _mapper.Map<ReservationDtoGet>(reservation);
+        //
+        // return output;
+        return Task.FromResult(new ReservationDtoGet()).Result;
     }
 
     public async Task<IEnumerable<ReservationDtoGet>> GetAllAsync()

@@ -5,6 +5,7 @@ using web_programming_lab_2.Services;
 using AutoMapper;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using web_programming_lab_2.Entities.Guests;
 using web_programming_lab_2.Entities.Reservations;
 using web_programming_lab_2.Middlewares;
 
@@ -48,6 +49,7 @@ public class Program
         builder.Services.AddAutoMapper(cfg => { cfg.AddProfile<MappingProfile>(); }, typeof(MappingProfile));
         // validators
         builder.Services.AddValidatorsFromAssemblyContaining<ReservationDtoCreate>();
+        builder.Services.AddValidatorsFromAssemblyContaining<GuestDtoCreate>();
         builder.Services.AddFluentValidationAutoValidation();
         // services
         builder.Services.AddScoped<RoomService>();

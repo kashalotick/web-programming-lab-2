@@ -18,7 +18,7 @@ public class ReservationsController : ControllerBase
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ReservationDtoGet>> Create([FromBody] ReservationDtoCreate dto)
+    public async Task<ActionResult<ReservationDtoGet>> Create([FromBody] ReservationCreateRequest dto)
     {
         var result = await _reservationService.CreateReservation(dto);
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);

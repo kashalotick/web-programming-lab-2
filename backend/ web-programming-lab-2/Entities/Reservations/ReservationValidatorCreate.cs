@@ -12,5 +12,7 @@ public class ReservationValidatorCreate : AbstractValidator<ReservationDtoCreate
         RuleFor(x => x.CheckOut)
             .GreaterThan(x => x.CheckIn)
             .WithMessage("Check-out date must be greater than check-in date.");
+        RuleFor(x => x.GuestCount)
+            .GreaterThanOrEqualTo(1);
     }
 }

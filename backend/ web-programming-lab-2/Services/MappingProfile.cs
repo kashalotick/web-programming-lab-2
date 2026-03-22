@@ -9,7 +9,7 @@ public class MappingProfile : Profile
     public MappingProfile()
     {
         CreateMap<Reservation, ReservationDtoGet>();
-        CreateMap<ReservationDtoCreate, Reservation>();
+        CreateMap<ReservationCreateRequest, Reservation>();
         
         CreateMap<Room, RoomDtoGet>();
 
