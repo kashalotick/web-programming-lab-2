@@ -10,14 +10,12 @@ public class MappingProfile : Profile
     public MappingProfile()
     {
         CreateMap<Reservation, ReservationDtoGet>();
+        CreateMap<Reservation, ReservationDtoFullGet>(); // TODO: works??
         CreateMap<ReservationDtoCreate, Reservation>();
         
         CreateMap<Room, RoomDtoGet>();
         
-        
         CreateMap<Guest, GuestDtoGet>();
         CreateMap<GuestDtoCreate, Guest>();
-
-
     }
 }

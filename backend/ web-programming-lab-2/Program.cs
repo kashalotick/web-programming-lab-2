@@ -52,12 +52,12 @@ public class Program
         builder.Services.AddValidatorsFromAssemblyContaining<GuestDtoCreate>();
         builder.Services.AddFluentValidationAutoValidation();
         // services
+        builder.Services.AddScoped<GuestService>();
         builder.Services.AddScoped<RoomService>();
         builder.Services.AddScoped<ReservationService>();
 
         // controllers
         builder.Services.AddControllers();
-        
 
         var app = builder.Build();
 
