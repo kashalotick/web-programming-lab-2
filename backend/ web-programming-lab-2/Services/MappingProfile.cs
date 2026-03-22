@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using web_programming_lab_2.Entities.Guests;
 using web_programming_lab_2.Entities.Reservations;
 using web_programming_lab_2.Entities.Rooms;
 
@@ -9,9 +10,14 @@ public class MappingProfile : Profile
     public MappingProfile()
     {
         CreateMap<Reservation, ReservationDtoGet>();
-        CreateMap<ReservationCreateRequest, Reservation>();
+        CreateMap<ReservationDtoCreate, Reservation>();
         
         CreateMap<Room, RoomDtoGet>();
+        
+        
+        CreateMap<Guest, GuestDtoGet>();
+        CreateMap<GuestDtoCreate, Guest>();
+
 
     }
 }
