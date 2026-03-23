@@ -4,12 +4,13 @@ import type {AvailabilityDtoGet} from "~/types/room";
 
 const props = defineProps<{
   dates: AvailabilityDtoGet,
-  dateMin?: Date | null, // YYYY-MM-DD
-  dateMax?: Date | null, // YYYY-MM-DD
+  dateMin?: Date | null,
+  dateMax?: Date | null,
   allowDisabled?: boolean,
   modelValue: string | null,
+  monthsBefore?: number | null,  // null = необмежено, 0 = заблоковано, N = N місяців назад
+  monthsAfter?: number | null,   // null = необмежено, 0 = заблоковано, N = N місяців вперед
 }>()
-
 const emit = defineEmits(['update:modelValue', 'reset', 'ok'])
 
 // --- Стан навігації ---
@@ -39,13 +40,33 @@ const firstDayOffset = computed(() => {
 })
 
 // --- Навігація ---
+const viewDate = computed(() =>
+    new Date(currentYear.value, currentMonth.value, 1)
+)
+
 const isPrevMonthDisabled = computed(() => {
-  return (
-      currentYear.value < today.getFullYear() ||
-      (currentYear.value === today.getFullYear() && currentMonth.value <= today.getMonth())
-  )
+  const { monthsBefore } = props
+
+  // 0 — повністю заблоковано
+  if (monthsBefore === 0) return true
+
+  // null або undefined — необмежено
+  if (monthsBefore == null) return false
+
+  // N — перевіряємо чи не вийдемо за межу
+  const limit = new Date(today.getFullYear(), today.getMonth() - monthsBefore, 1)
+  return viewDate.value <= limit
 })
 
+const isNextMonthDisabled = computed(() => {
+  const { monthsAfter } = props
+
+  if (monthsAfter === 0) return true
+  if (monthsAfter == null) return false
+
+  const limit = new Date(today.getFullYear(), today.getMonth() + monthsAfter, 1)
+  return viewDate.value >= limit
+})
 function prevMonth() {
   if (isPrevMonthDisabled.value) return
   if (currentMonth.value === 0) {
@@ -57,6 +78,7 @@ function prevMonth() {
 }
 
 function nextMonth() {
+  if (isNextMonthDisabled.value) return
   if (currentMonth.value === 11) {
     currentMonth.value = 0
     currentYear.value++
@@ -136,7 +158,8 @@ function okDate() {
       <div class="cal__header">
         <button class="cal__nav" @click="prevMonth" :disabled="isPrevMonthDisabled">&#8249;</button>
         <span class="cal__title">{{ currentMonthLabel }} {{ currentYear }}</span>
-        <button class="cal__nav" @click="nextMonth">&#8250;</button>
+        <button class="cal__nav" @click="nextMonth" :disabled="isNextMonthDisabled">&#8250;</button>
+
       </div>
 
       <div class="cal__weekdays">

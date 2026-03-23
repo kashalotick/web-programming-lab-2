@@ -3,7 +3,7 @@ import {useForm, useFormValues} from 'vee-validate'
 import {toTypedSchema} from '@vee-validate/zod'
 import {z} from 'zod'
 import type {AvailabilityDtoGet, RoomDtoGet} from "~/types/room";
-import DateRangePicker from "~/components/DateRangePicker.vue";
+import ReservationDatePicker from "~/components/ui/ReservationDatePicker.vue";
 import {RoomAPI} from "~/services/room-service";
 import type {GuestDtoCreate} from "~/types/guest";
 import type {ReservationDtoCreate} from "~/types/reservation";
@@ -93,10 +93,15 @@ watch([checkIn, checkOut], ([ci, co]) => {
 watch(roomId, (newVal) => {
   if (newVal) {
     fetchAvailability(newVal)
-    guests.value = guests.value > (rooms.value[newVal]?.capacity ?? 1) ? 0 : guests.value
+    guests.value = guests.value ?? 0 > (rooms.value[newVal]?.capacity ?? 1) ? 0 : guests.value
   }
 })
-const reservationData = ref<ReservationDtoCreate>({})
+const reservationData = ref<ReservationDtoCreate>({
+  roomId: 0,
+  guestCount: 0,
+  checkIn: '',
+  checkOut: '',
+})
 const onSubmit = handleSubmit(async values => {
   fetchError.value = ''
   isSubmitting.value = true
@@ -166,7 +171,8 @@ function format(date: string | null) {
 
 <template>
   <PopUp v-model="popupSuccess" title="Бронювання успішне!" type="success">
-    Номер "{{ rooms[reservationData.roomId]?.name }}" з {{ format(reservationData.checkIn) }} по {{ format(reservationData.checkOut) }} для {{ reservationData.guestCount }} гостей
+    Номер "{{ rooms[reservationData.roomId]?.name }}" з {{ format(reservationData.checkIn) }} по
+    {{ format(reservationData.checkOut) }} для {{ reservationData.guestCount }} гостей
     успішно заброньована!
   </PopUp>
   <PopUp v-model="popupError" title="Помилка бронювання" type="error">{{ fetchError }}</PopUp>
@@ -257,7 +263,7 @@ function format(date: string | null) {
       </div>
     </div>
   </form>
-  <DateRangePicker
+  <ReservationDatePicker
       v-model:activeField="activeField"
       v-model:checkIn="checkInModelValue"
       v-model:checkOut="checkOutModelValue"
@@ -350,66 +356,6 @@ form {
   gap: .75rem;
 }
 
-.sb-field {
-  display: flex;
-  flex-direction: column;
-  gap: .35rem;
-}
-
-.sb-field label {
-  font-size: .7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: .08em;
-  color: #D26B2E;
-}
-
-.sb-field input,
-.sb-field select {
-  font-family: 'Montserrat', sans-serif;
-  font-size: .875rem;
-  color: #202225;
-  background: #fff;
-  border: 1.5px solid #F9C492;
-  border-radius: 10px;
-  padding: .55rem .75rem;
-  outline: none;
-  transition: border-color .2s, box-shadow .2s;
-  appearance: none;
-  -webkit-appearance: none;
-  width: 100%;
-  box-sizing: border-box;
-
-  &:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-  }
-}
-
-.sb-field select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23D26B2E' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right .75rem center;
-  padding-right: 2rem;
-}
-
-.sb-field input:focus:not(:disabled),
-.sb-field select:focus:not(:disabled) {
-  border-color: #FB9558;
-  box-shadow: 0 0 0 3px rgba(251, 149, 88, .15);
-}
-
-.sb-field input:hover:not(:disabled),
-.sb-field select:hover:not(:disabled) {
-  border-color: #FB9558;
-}
-
-.sb-error {
-  font-size: .72rem;
-  color: #dc3545;
-  min-height: .9rem;
-  letter-spacing: .01em;
-}
 
 .sb-divider {
   height: 1px;

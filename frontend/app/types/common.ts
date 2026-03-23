@@ -14,10 +14,10 @@ export interface DateRangeQueryParams {
 }
 
 export interface ReservationsQueryParams {
-  from?: string;
-  to?: string;
-  roomId?: number;
-  isActive?: boolean;
-  sortBy?: string;
+  from?: string | null;
+  to?: string | null;
+  roomId?: number | null;
+  isActive?: boolean| null;
+  sortBy?: 'check_in' | 'created_at' | 'grand_total'| null;
   isDescending?: boolean;
 }
