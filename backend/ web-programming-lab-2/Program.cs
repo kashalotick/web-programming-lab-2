@@ -5,6 +5,7 @@ using web_programming_lab_2.Services;
 using AutoMapper;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using web_programming_lab_2.Entities;
 using web_programming_lab_2.Entities.Guests;
 using web_programming_lab_2.Entities.Reservations;
 using web_programming_lab_2.Middlewares;
@@ -50,6 +51,8 @@ public class Program
         // validators
         builder.Services.AddValidatorsFromAssemblyContaining<ReservationDtoCreate>();
         builder.Services.AddValidatorsFromAssemblyContaining<GuestDtoCreate>();
+        builder.Services.AddValidatorsFromAssemblyContaining<ReservationDtoUpdate>();
+        builder.Services.AddValidatorsFromAssemblyContaining<TimePeriodFilter>();
         builder.Services.AddFluentValidationAutoValidation();
         // services
         builder.Services.AddScoped<GuestService>();
