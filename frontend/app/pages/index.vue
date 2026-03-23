@@ -5,7 +5,6 @@
 <template>
   <div class="main">
     <NuxtLink to="/book">Гість</NuxtLink>
-    <NuxtLink to="/admin">Адмін</NuxtLink>
     <NuxtLink to="/admin/reservations">Бронювання</NuxtLink>
 
   </div>

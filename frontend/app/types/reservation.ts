@@ -1,4 +1,5 @@
-import type {GuestDtoCreate} from "~/types/guest";
+import type {GuestDtoGet} from "~/types/guest";
+import type {RoomDtoGet} from "~/types/room";
 export interface Reservation {
     id: number;
     roomId: number;
@@ -30,6 +31,17 @@ export interface ReservationDtoGet {
     id: number;
     roomId: number;
     guestId: number;
+    guestCount: number;
+    checkIn: string;
+    checkOut: string;
+    createdAt: string; // date-time
+    grandTotal: number;
+    isActive: boolean;
+}
+export interface ReservationFullDtoGet {
+    id: number;
+    room: RoomDtoGet;
+    guest: GuestDtoGet;
     guestCount: number;
     checkIn: string;
     checkOut: string;

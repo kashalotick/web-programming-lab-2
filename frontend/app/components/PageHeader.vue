@@ -40,14 +40,19 @@ const modeText = computed(() => {
         <slot name="secondary"/>
       </div>
     </div>
-    <slot name="buttons"/>
+    <div class="buttons">
+      <slot name="buttons"/>
+    </div>
   </div>
 
 
 </template>
 
 <style scoped>
-
+.buttons {
+  display: flex;
+  gap: 8px;
+}
 .page-header {
   display: flex;
   justify-content: space-between;
@@ -91,11 +96,11 @@ const modeText = computed(() => {
 }
 
 .page-subtitle {
-  font-size: .72rem;
-  color: var(--gray-dark);
+  font-family: var(--font-description), sans-serif;
+  font-size: 0.875rem;
+  color: #999;
   margin-top: 4px;
   letter-spacing: .04em;
-  text-transform: uppercase;
 }
 
 </style>

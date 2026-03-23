@@ -47,14 +47,31 @@ async function fetchReservations(params: ReservationsQueryParams = {}) {
 }
 
 async function viewReservation(id: number) {
+  await navigateTo(`/admin/reservations/${id}`)
   console.log(`View reservation ${id}`)
 }
 async function cancelReservation(id: number) {
-  console.log(`Cancel reservation ${id}`)
+  try {
+    await ReservationAPI.cancel(id)
+    console.log(`Cancel reservation ${id}`)
+    await fetchReservations()
+  } catch (e) {
+    console.error(`Failed to cancel reservation ${id}`, e)
+    // @ts-ignore
+    console.error(e.data)
+  }
 
 }
 async function deleteReservation(id: number) {
-  console.log(`Delete reservation ${id}`)
+  try {
+    await ReservationAPI.delete(id)
+    console.log(`Delete reservation ${id}`)
+    await fetchReservations()
+  } catch (e) {
+    console.error(`Failed to delete reservation ${id}`, e)
+    // @ts-ignore
+    console.error(e.data)
+  }
 }
 
 </script>
@@ -90,6 +107,7 @@ main {
 
   flex: 1;
   padding: 2rem 2rem;
+  height: 100dvh;
 
 }
 </style>
