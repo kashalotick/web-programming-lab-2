@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using web_programming_lab_2.Entities;
 using web_programming_lab_2.Entities.Reservations;
 using web_programming_lab_2.Entities.Rooms;
 using web_programming_lab_2.Services;
@@ -17,6 +18,7 @@ public class RoomsController : ControllerBase
     }
 
     [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<RoomDtoGet>>> GetAll()
     {
         var result = await _roomService.GetAllAsync();
@@ -25,6 +27,8 @@ public class RoomsController : ControllerBase
 
 
     [HttpGet("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<RoomDtoGet>> GetById(int id)
     {
         var result = await _roomService.GetByIdAsync(id);
@@ -32,9 +36,20 @@ public class RoomsController : ControllerBase
     }
 
     [HttpGet("{id}/reservations")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<IEnumerable<ReservationDtoGet>>> GetReservations(int id)
     {
         var result = await _roomService.GetReservationsAsync(id);
+        return Ok(result);
+    }
+    
+    [HttpGet("{id}/availability")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<IEnumerable<ReservationDtoGet>>> GetReservations(int id, [FromQuery] TimePeriodFilter rangeFilter)
+    {
+        var result = await _roomService.GetAvailabilityAsync(id, rangeFilter);
         return Ok(result);
     }
 }
