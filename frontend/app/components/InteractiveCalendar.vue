@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import {ref, computed} from 'vue'
+import type {AvailabilityDtoGet} from "~/types/room";
 
 const props = defineProps<{
-  dates: Record<string, {
-    available: boolean;
-    price: number;
-  }>,
+  dates: AvailabilityDtoGet,
   dateMin?: Date | null, // YYYY-MM-DD
   dateMax?: Date | null, // YYYY-MM-DD
   allowDisabled?: boolean,
@@ -91,7 +89,7 @@ function isDayDisabled(day: number) {
     if (date > props.dateMax) return true
   }
   if (!data && !props.allowDisabled) return true
-  if (!data?.available && !props.allowDisabled) return true
+  if (!data?.isAvailable && !props.allowDisabled) return true
 
 
   return false;
@@ -99,7 +97,7 @@ function isDayDisabled(day: number) {
 
 function isDayAvailable(day: number) {
   const data = getDayData(day)
-  return data?.available
+  return data?.isAvailable ?? false
 }
 
 function getDayClasses(day: number) {
@@ -112,7 +110,7 @@ function getDayClasses(day: number) {
   return {
     'cal__cell--today': d.getTime() == today.getTime(),
     'cal__cell--disabled': disabled,
-    'cal__cell--available': !disabled && data?.available,
+    'cal__cell--available': !disabled && data?.isAvailable,
     'cal__cell--no-data': !data,
     'cal__cell--selected': props.modelValue === key,
   }

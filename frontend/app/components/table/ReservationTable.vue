@@ -7,15 +7,13 @@ const props = defineProps<{
 }>()
 
 
-type SortBy = 'id' | 'guest' | 'room' | 'checkIn' | 'checkOut' | 'grandTotal' | 'status' | 'createdAt'
-type SortWay = 'desc' | 'asc'
 type filters = {
   status: 'all' | 'active' | 'cancelled'
   rooms: number | 'all',
   range: [Date, Date]
 }
 defineEmits<{
-  sort: [string, 'asc' | 'desc'],
+  sort: ['grand_total' | 'is_active' | 'created_at', boolean],
 }>()
 </script>
 

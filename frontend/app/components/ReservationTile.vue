@@ -26,8 +26,6 @@ defineEmits<{
 }>()
 </script>
 
-І Vue-компонент з Nuxt Icons:
-vue
 <template>
   <div class="sb-tile" :class="{ 'sb-tile--inactive': !reservation.isActive }">
     <div class="sb-tile-main">

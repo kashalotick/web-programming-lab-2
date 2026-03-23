@@ -1,47 +1,28 @@
 <script setup lang="ts">
 
-import {type ReservationDtoGet, restore} from "~/types/reservation";
-import DateRangePicker from "~/components/DateRangePicker.vue";
-
-const config = useRuntimeConfig()
-
-// async function click() {
-//   let result = await $fetch('rooms', {
-//     baseURL: config.public.apiBase,
-//   })
-//   console.log('/rooms')
-//   console.log(result)
-//
-//   console.log('/reservations')
-//   result = await $fetch('reservations', {
-//     baseURL: config.public.apiBase,
-//   })
-//   console.log(result)
-// }
-// async function fetchReservations() {
-//   const result = await $fetch('reservations', {
-//     baseURL: config.public.apiBase
-//   }) as ReservationDtoGet[];
-//   const res = Object.fromEntries(result.map(r => [r.id, restore(r)]))
-//   console.log(res)
-// }
-
 </script>
 
 <template>
-  <NuxtLink to="/admin/reservations/new">Гість</NuxtLink>
-  <NuxtLink to="/admin/reservations/new">Адмін</NuxtLink>
+  <div class="main">
+    <NuxtLink to="/book">Гість</NuxtLink>
+    <NuxtLink to="/admin">Адмін</NuxtLink>
+    <NuxtLink to="/admin/reservations">Бронювання</NuxtLink>
+
+  </div>
+
 
 </template>
 
 <style scoped>
-.booking-inputs {
+.main {
   display: flex;
-  gap: 16px;
-}
-
-.input-wrapper {
-  position: relative;
+  flex-direction: column;
+  gap: 2rem;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100dvh;
+  font-size: 2rem;
 }
 
 </style>

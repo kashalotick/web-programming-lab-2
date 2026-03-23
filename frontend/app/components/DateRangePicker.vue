@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type {AvailabilityDtoGet} from "~/types/room";
+
 const {checkInTarget, checkOutTarget, activeField, checkIn, checkOut, dates, maxStay = 7} = defineProps<{
 
   checkInTarget: HTMLElement | null,
@@ -6,10 +8,7 @@ const {checkInTarget, checkOutTarget, activeField, checkIn, checkOut, dates, max
   activeField: 'checkIn' | 'checkOut' | null,
   checkIn: string | null,
   checkOut: string | null,
-  dates: Record<string, {
-    price: number;
-    available: boolean;
-  }>,
+  dates: AvailabilityDtoGet,
   maxStay?: number,
 }>()
 const emit = defineEmits(['update:activeField', 'update:modelValue', 'update:checkIn', 'update:checkOut'])
@@ -48,7 +47,7 @@ const coMax = computed(() => {
     const dateStr = d.toISOString().split('T')[0]
     const day = dates[dateStr!]
 
-    if (!day || !day.available) {
+    if (!day || !day.isAvailable) {
       return d
     }
   }
@@ -57,17 +56,14 @@ const coMax = computed(() => {
 })
 
 watch(() => checkIn, (newCi, old) => { // TODO: works unproperly
-  console.log(`checkIn changed: ${old} -> ${newCi}`)
   if (newCi && checkOut) {
     const checkOutDate = new Date(checkOut)
     const ciDate = new Date(newCi)
     if (checkOutDate <= ciDate) {
       emit('update:checkOut', null)
-      console.log('update:checkOut before range')
     }
     if (checkOut && coMax.value && checkOutDate > coMax.value) {
       emit('update:checkOut', null)
-      console.log('update:checkOut after range')
 
     }
   }

@@ -1,8 +1,14 @@
-export type Room = {
+export interface RoomDtoGet {
   id: number;
-  name: string;
+  name?: string | null;
   capacity: number;
   price: number;
-  description: string;
-  imageUrl: string;
+  description?: string | null;
+  imageUrl?: string | null;
 }
+
+export type AvailabilityDtoGet = Record<string, {
+  isAvailable: boolean;
+  price: number;
+}>
+

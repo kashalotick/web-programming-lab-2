@@ -1,3 +1,4 @@
+import type {GuestDtoCreate} from "~/types/guest";
 export interface Reservation {
     id: number;
     roomId: number;
@@ -6,10 +7,24 @@ export interface Reservation {
     checkIn: Date;
     checkOut: Date;
     createdAt: Date;
-    isActive: boolean;
     grandTotal: number;
+    isActive: boolean;
+}
+export interface ReservationDtoCreate {
+    roomId: number;
+    guestCount: number;
+    checkIn: string; // date (ISO 8601: "YYYY-MM-DD")
+    checkOut: string; // date (ISO 8601: "YYYY-MM-DD")
+    grandTotal?: number | null;
 }
 
+export interface ReservationDtoUpdate {
+    roomId?: number | null;
+    guestCount?: number | null;
+    checkIn?: string | null;
+    checkOut?: string | null;
+    grandTotal?: number | null;
+}
 
 export interface ReservationDtoGet {
     id: number;
@@ -18,26 +33,11 @@ export interface ReservationDtoGet {
     guestCount: number;
     checkIn: string;
     checkOut: string;
-    createdAt: string;
-    isActive: boolean;
+    createdAt: string; // date-time
     grandTotal: number;
+    isActive: boolean;
 }
 
-export interface ReservationDtoUpdate {
-    // TODO: make
-}
-export interface ReservationDtoCreate {
-    reservation: {
-        roomId: number;
-        guestCount: number;
-        checkIn: string;
-        checkOut: string;
-    }
-    guest: {
-        name: string,
-        email: string,
-    }
-}
 
 export function restore(dto: ReservationDtoGet): Reservation {
     return {

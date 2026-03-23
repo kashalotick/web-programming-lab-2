@@ -2,18 +2,22 @@
 import {useForm, useFormValues} from 'vee-validate'
 import {toTypedSchema} from '@vee-validate/zod'
 import {z} from 'zod'
-import type {Room} from "~/types/room";
+import type {AvailabilityDtoGet, RoomDtoGet} from "~/types/room";
 import DateRangePicker from "~/components/DateRangePicker.vue";
+import {RoomAPI} from "~/services/room-service";
+import type {GuestDtoCreate} from "~/types/guest";
+import type {ReservationDtoCreate} from "~/types/reservation";
+import {ReservationAPI} from "~/services/reservation-service";
+import PopUp from "~/components/ui/PopUp.vue";
 
-const config = useRuntimeConfig()
-const rooms = ref<Record<number, Room>>({})
-
-const availability = ref<Record<string, {
-  price: number;
-  available: boolean;
-}>>({})
+const rooms = ref<Record<number, RoomDtoGet>>({})
+const availability = ref<AvailabilityDtoGet>({})
 const MAX_STAY = 7
+const isSubmitting = ref(false)
 
+const popupSuccess = ref(false)
+const popupError = ref(false)
+const fetchError = ref<string>('')
 fetchRooms()
 
 
@@ -25,7 +29,7 @@ const buildSchema = (maxCapacity: number) => toTypedSchema(z.object({
   checkOut: z.string()
       .min(1, 'Дата виїзду обовʼязкова'),
   name: z.string().min(1, 'Імʼя обовʼязкове'),
-  phone: z.string().regex(/^\+?[\d\s\-\(\)]{10,15}$/, 'Невалідний номер телефону'),
+  email: z.string().email(),
   guests: z.number()
       .min(1, 'Мінімум 1 гість')
       .max(maxCapacity, `Максимум ${maxCapacity} гостей`),
@@ -43,7 +47,7 @@ const [roomId, roomIdAttrs] = defineField('roomId')
 const [checkIn, checkInAttrs] = defineField('checkIn')
 const [checkOut, checkOutAttrs] = defineField('checkOut')
 const [name, nameAttrs] = defineField('name')
-const [phone, phoneAttrs] = defineField('phone') // TODO: replace with email
+const [email, emailAttrs] = defineField('email') // TODO: replace with email
 const [guests, guestsAttrs] = defineField('guests')
 
 const nights = ref(0)
@@ -55,10 +59,6 @@ const grandTotal = computed(() => {
   return room.price * nights.value;
 })
 
-
-const onSubmit = handleSubmit(values => {
-  console.log(values)
-})
 
 const activeField = ref<'checkIn' | 'checkOut' | null>(null)
 const checkInModelValue = ref<string | null>(null)
@@ -93,45 +93,68 @@ watch([checkIn, checkOut], ([ci, co]) => {
 watch(roomId, (newVal) => {
   if (newVal) {
     fetchAvailability(newVal)
+    guests.value = guests.value > (rooms.value[newVal]?.capacity ?? 1) ? 0 : guests.value
+  }
+})
+const reservationData = ref<ReservationDtoCreate>({})
+const onSubmit = handleSubmit(async values => {
+  fetchError.value = ''
+  isSubmitting.value = true
+
+  const guestDto: GuestDtoCreate = {
+    name: values.name,
+    email: values.email,
+  }
+  const reservationDto: ReservationDtoCreate = {
+    roomId: values.roomId,
+    guestCount: values.guests,
+    checkIn: values.checkIn,
+    checkOut: values.checkOut,
+  }
+  reservationData.value = reservationDto
+  console.log(guestDto, reservationDto)
+
+  try {
+    const result = await ReservationAPI.makeReservation(reservationDto, guestDto)
+    console.log(result)
+    fetchAvailability(values.roomId)
+    popupSuccess.value = true
+    checkInModelValue.value = null
+    checkOutModelValue.value = null
+
+  } catch (e) {
+    console.error('Failed to make reservation', e)
+    fetchError.value = 'Не вдалося створити бронювання. Спробуйте ще раз.'
+    popupError.value = true
+  } finally {
+    isSubmitting.value = false
   }
 })
 
 async function fetchRooms() {
-  const result = await $fetch('rooms', {
-    baseURL: config.public.apiBase,
-  }) as Room[];
-  rooms.value = Object.fromEntries(result.map(r => [r.id, r]))
+  try {
+    const result = await RoomAPI.getAll() as RoomDtoGet[]
+    rooms.value = Object.fromEntries(result.map(room => [room.id, room]))
+  } catch (e) {
+    console.error('Failed to fetch rooms', e)
+  }
 }
 
 async function fetchAvailability(roomId: number) {
-  console.log(`Fetching availability for room ${roomId}...`)
-  const dates: Record<string, {
-    price: number;
-    available: boolean;
-  }> = {
-    '2026-03-16': {price: 1200, available: true},
-    '2026-03-17': {price: 1200, available: true},
-    '2026-03-18': {price: 1200, available: true},
-    '2026-03-19': {price: 1200, available: true},
-    '2026-03-20': {price: 1200, available: true},
+  const from = new Date()
+  const to = new Date()
+  to.setDate(to.getDate() + 60)
 
-    '2026-03-21': {price: 1200, available: true},
-    '2026-03-22': {price: 1200, available: true},
-    '2026-03-23': {price: 1200, available: true},
-    '2026-03-24': {price: 1200, available: true},
-    '2026-03-25': {price: 1200, available: true},
-    '2026-03-26': {price: 1200, available: true},
-    '2026-03-27': {price: 1200, available: true},
-    '2026-03-28': {price: 1200, available: true},
-    '2026-03-29': {price: 1200, available: true},
-    '2026-03-30': {price: 1200, available: true},
-    '2026-03-31': {price: 1200, available: true},
+  try {
+    const result = await RoomAPI.getAvailability(roomId, {
+      from: from.toISOString().split('T')[0],
+      to: to.toISOString().split('T')[0],
+    }) as AvailabilityDtoGet
 
-    '2026-04-01': {price: 1200, available: true},
-    '2026-04-02': {price: 1200, available: true},
-    '2026-04-03': {price: 1200, available: true},
+    availability.value = result
+  } catch (e) {
+    console.error('Failed to fetch availability', e)
   }
-  availability.value = dates
 }
 
 function format(date: string | null) {
@@ -142,12 +165,17 @@ function format(date: string | null) {
 </script>
 
 <template>
+  <PopUp v-model="popupSuccess" title="Бронювання успішне!" type="success">
+    Номер "{{ rooms[reservationData.roomId]?.name }}" з {{ format(reservationData.checkIn) }} по {{ format(reservationData.checkOut) }} для {{ reservationData.guestCount }} гостей
+    успішно заброньована!
+  </PopUp>
+  <PopUp v-model="popupError" title="Помилка бронювання" type="error">{{ fetchError }}</PopUp>
+
   <form class="sb-wrap" @submit="onSubmit">
     <div class="sb-card">
       <div class="sb-header">
         <div class="sb-header-leaf">🌿</div>
         <h2>Створити бронювання</h2>
-        <!--        <p><span class="sb-accent-dot"></span>Еко-садиба СтавБір · Чернівецька обл.</p>-->
       </div>
 
       <div class="sb-body">
@@ -160,12 +188,7 @@ function format(date: string | null) {
               {{ room.name }} (до {{ room.capacity }} гостей)
             </option>
           </select>
-          <!--          <select>-->
-          <!--            <option disabled selected value="">Оберіть кімнату</option>-->
-          <!--            <option>Лісова (до 2 гостей)</option>-->
-          <!--            <option>Озерна (до 4 гостей)</option>-->
-          <!--            <option>Садова (до 6 гостей)</option>-->
-          <!--          </select>-->
+
           <span class="sb-error">{{ errors.roomId }}</span>
         </div>
 
@@ -196,13 +219,13 @@ function format(date: string | null) {
         <div class="sb-row">
           <div class="sb-field">
             <label>Імʼя гостя</label>
-            <input v-model="name" v-bind="nameAttrs" type="text"/>
+            <input v-model="name" v-bind="nameAttrs" type="text" autocomplete="name"/>
             <span class="sb-error">{{ errors.name }}</span>
           </div>
           <div class="sb-field">
-            <label>Телефон</label>
-            <input v-model="phone" v-bind="phoneAttrs" type="tel"/>
-            <span class="sb-error">{{ errors.phone }}</span>
+            <label>Email</label>
+            <input v-model="email" v-bind="emailAttrs" type="email"/>
+            <span class="sb-error">{{ errors.email }}</span>
           </div>
         </div>
 
@@ -223,13 +246,14 @@ function format(date: string | null) {
 
         <div class="sb-divider"></div>
 
-        <div class="sb-total">
+        <div class="sb-total" v-if="grandTotal > 0">
           <span class="sb-total-label">До сплати</span>
-          <span class="sb-total-amount">₴ {{ grandTotal }}</span>
+          <span class="sb-total-amount">{{ grandTotal }} ₴</span>
         </div>
 
-        <button class="sb-submit">Підтвердити бронювання</button>
+        <button class="sb-submit" :disabled="isSubmitting">Підтвердити бронювання</button>
 
+        <span class="sb-error">{{ fetchError }}</span>
       </div>
     </div>
   </form>
@@ -432,17 +456,23 @@ form {
   cursor: pointer;
   transition: opacity .2s, transform .15s;
   width: 100%;
+
+  &:hover:not(:disabled) {
+    opacity: .9;
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled) {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 }
 
-.sb-submit:hover {
-  opacity: .9;
-  transform: translateY(-1px);
-}
-
-.sb-submit:active {
-  opacity: 1;
-  transform: translateY(0);
-}
 
 .sb-dates-label {
   font-size: .7rem;
