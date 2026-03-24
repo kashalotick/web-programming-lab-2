@@ -15,9 +15,11 @@ const emit = defineEmits<{
 function onView() {
   emit('view', reservation.id)
 }
+
 function onCancel() {
   emit('cancel', reservation.id)
 }
+
 function onDelete() {
   emit('delete', reservation.id)
 }
@@ -36,7 +38,10 @@ function onDelete() {
       </div>
     </td>
     <td class="td-price">{{ reservation.grandTotal }} ₴</td>
-    <td><span class="badge badge-active"><span
+    <td><span class="badge" :class="{
+      'badge-active' : reservation.isActive,
+      'badge-inactive' : !reservation.isActive
+    }"><span
         class="badge-dot"></span>{{ reservation.isActive ? 'Активне' : 'Скасоване' }}</span></td>
     <td style="width: 12%">
       <span class="date-val">{{ formatFullDate(reservation.createdAt) }}</span>

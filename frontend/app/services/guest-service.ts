@@ -5,14 +5,12 @@ export const GuestAPI = {
     const result = await $fetch('/guests', {
       baseURL: config.public.apiBase
     });
-    console.log(result);
     return result;
   },
   async get(id: number) {
     const result = await $fetch(`/guests/${id}`,{
       baseURL: config.public.apiBase
     });
-    console.log(result);
     return result;
   },
 
@@ -20,7 +18,6 @@ export const GuestAPI = {
     const result = await $fetch(`/guests/${id}/reservations`,{
       baseURL: config.public.apiBase
     });
-    console.log(result)
     return result;
   },
 }

@@ -6,14 +6,12 @@ export const RoomAPI = {
     const result = await $fetch('/rooms', {
       baseURL: config.public.apiBase
     });
-    console.log(result);
     return result;
   },
   async get(id: number) {
     const result = await $fetch(`/rooms/${id}`,{
       baseURL: config.public.apiBase
     });
-    console.log(result);
     return result;
   },
 
@@ -21,7 +19,6 @@ export const RoomAPI = {
     const result = await $fetch(`/rooms/${id}/reservations`,{
       baseURL: config.public.apiBase
     });
-    console.log(result)
     return result;
   },
   async getAvailability(id: number, params: DateRangeQueryParams) {
@@ -29,7 +26,6 @@ export const RoomAPI = {
       query: params,
       baseURL: config.public.apiBase
     });
-    console.log(result)
     return result;
   }
 }
