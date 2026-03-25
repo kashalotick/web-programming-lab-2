@@ -1,14 +1,19 @@
 <script setup lang="ts">
-import type {ReservationDtoGet, ReservationFullDtoGet} from "~/types/reservation"
-import type { ReservationDtoCreate, ReservationDtoUpdate } from "~/types/reservation"
-import type { GuestDtoCreate } from "~/types/guest"
-import { ReservationAPI } from "~/services/reservation-service"
+import type {
+  ReservationFullDtoGet,
+  ReservationDtoCreate,
+  ReservationDtoUpdate,
+  ReservationDtoGet
+} from "~/types/reservation"
+import type {GuestDtoCreate} from "~/types/guest"
+import type {AvailabilityDtoGet, RoomDtoGet} from "~/types/room"
+import {ReservationAPI} from "~/services/reservation-service"
+import {RoomAPI} from "~/services/room-service"
 import ReservationMainCard from "~/components/reservations/ReservationMainCard.vue"
 import ReservationRoomCard from "~/components/reservations/ReservationRoomCard.vue"
 import ReservationGuestCard from "~/components/reservations/ReservationGuestCard.vue"
-import { RoomAPI } from "~/services/room-service"
-import type { RoomDtoGet } from "~/types/room"
 import PopUp from "~/components/ui/PopUp.vue";
+import {guestCreateSchema, reservationCreateSchema, reservationUpdateSchema} from "~/types/schemas/reservation-schema";
 
 const props = defineProps<{
   reservation: ReservationFullDtoGet | null
@@ -16,54 +21,134 @@ const props = defineProps<{
 
 const mode = ref<'view' | 'edit' | 'create'>(props.reservation ? 'view' : 'create')
 const rooms = ref<RoomDtoGet[]>([])
+const availability = ref<AvailabilityDtoGet>({})
 
 // -- Pop ups --------------------------------------------------------
 const errorMessage = ref<string>('')
 const errorPopUpVisible = ref(false)
-const successMessage = ref<string>('')
-const successPopUpVisible = ref(false)
+
 
 // ── DTO для edit ────────────────────────────────────────────────────────────
 const reservationDtoUpdate = ref<ReservationDtoUpdate>({
-  roomId:     props.reservation?.room?.id     ?? null,
-  guestCount: props.reservation?.guestCount   ?? null,
-  checkIn:    props.reservation?.checkIn      ?? null,
-  checkOut:   props.reservation?.checkOut     ?? null,
-  grandTotal: props.reservation?.grandTotal   ?? null,
+  roomId: props.reservation?.room?.id ?? null,
+  guestCount: props.reservation?.guestCount ?? null,
+  checkIn: props.reservation?.checkIn ?? null,
+  checkOut: props.reservation?.checkOut ?? null,
+  grandTotal: props.reservation?.grandTotal ?? null,
 })
 
-// ── DTO для create ──────────────────────────────────────────────────────────
-const guestDtoCreate = ref<GuestDtoCreate>({
-  name:  '',
-  email: '',
-})
+// ── DTO для create ───────────────────────────────────────────────────────────
+const guestDtoCreate = ref<GuestDtoCreate>({name: '', email: ''})
 
 const reservationDtoCreate = ref<ReservationDtoCreate>({
-  roomId:     0,
+  roomId: 0,
   guestCount: 1,
-  checkIn:    '',
-  checkOut:   '',
+  checkIn: '',
+  checkOut: '',
   grandTotal: null,
 })
 
-// ── Локальна копія для відображення (view/edit) ─────────────────────────────
+// ── Локальна копія для відображення ─────────────────────────────────────────
 const localReservation = ref<ReservationFullDtoGet | null>(
-    props.reservation ? { ...props.reservation } : null
+    props.reservation ? {...props.reservation} : null
 )
 
 function applyUpdate(patch: Partial<ReservationFullDtoGet>) {
   if (localReservation.value) {
-    localReservation.value = { ...localReservation.value, ...patch }
+    localReservation.value = {...localReservation.value, ...patch}
   }
-  // Синхронізуємо update-DTO з патчем
-  if (patch.room?.id     !== undefined) reservationDtoUpdate.value.roomId     = patch.room.id
-  if (patch.guestCount   !== undefined) reservationDtoUpdate.value.guestCount = patch.guestCount
-  if (patch.checkIn      !== undefined) reservationDtoUpdate.value.checkIn    = patch.checkIn
-  if (patch.checkOut     !== undefined) reservationDtoUpdate.value.checkOut   = patch.checkOut
-  if (patch.grandTotal   !== undefined) reservationDtoUpdate.value.grandTotal = patch.grandTotal
+  if (patch.room?.id !== undefined) reservationDtoUpdate.value.roomId = patch.room.id
+  if (patch.guestCount !== undefined) reservationDtoUpdate.value.guestCount = patch.guestCount
+  if (patch.checkIn !== undefined) reservationDtoUpdate.value.checkIn = patch.checkIn
+  if (patch.checkOut !== undefined) reservationDtoUpdate.value.checkOut = patch.checkOut
+  if (patch.grandTotal !== undefined) reservationDtoUpdate.value.grandTotal = patch.grandTotal
 }
 
-// ── Заголовок ───────────────────────────────────────────────────────────────
+// ── availability з "розблокованим" діапазоном поточного бронювання ───────────
+// При edit picker отримує пропатчену версію: дати самого бронювання
+// позначаються як доступні, щоб юзер міг їх знову обрати
+const patchedAvailability = computed<AvailabilityDtoGet>(() => {
+  // Тільки для edit і тільки коли кімната не змінилась
+  const origCheckIn = props.reservation?.checkIn
+  const origCheckOut = props.reservation?.checkOut
+  const origRoomId = props.reservation?.room?.id
+  const currentRoomId = reservationDtoUpdate.value.roomId ?? origRoomId
+
+  if (
+      mode.value !== 'edit' ||
+      !origCheckIn || !origCheckOut ||
+      currentRoomId !== origRoomId  // кімната змінилась — не патчимо
+  ) {
+    return availability.value
+  }
+
+  const patched = {...availability.value}
+
+  // Ітеруємо всі дати від checkIn до checkOut (не включно) і розблоковуємо
+  const cursor = new Date(origCheckIn)
+  const end = new Date(origCheckOut)
+
+  while (cursor < end) {
+    const dateStr = cursor.toISOString().split('T')[0]!
+    patched[dateStr] = {
+      isAvailable: true,
+      price: patched[dateStr]?.price ?? 0,
+    }
+    cursor.setDate(cursor.getDate() + 1)
+  }
+
+  return patched
+})
+
+// ── Поточний roomId (для watch) ──────────────────────────────────────────────
+const activeRoomId = computed(() => {
+  if (mode.value === 'create') return reservationDtoCreate.value.roomId || null
+  if (mode.value === 'edit') return reservationDtoUpdate.value.roomId ?? localReservation.value?.room?.id ?? null
+  return localReservation.value?.room?.id ?? null
+})
+
+// При зміні кімнати — скидаємо дати та підвантажуємо availability
+watch(activeRoomId, async (newId, oldId) => {
+  if (!newId || newId === oldId) return
+
+  if (mode.value === 'create') {
+    await fetchAvailability(newId)
+    reservationDtoCreate.value.checkIn  = ''
+    reservationDtoCreate.value.checkOut = ''
+  } else if (mode.value === 'edit') {
+    await fetchAvailability(newId)
+
+    const origIn  = props.reservation?.checkIn  ?? null
+    const origOut = props.reservation?.checkOut ?? null
+
+    const datesAvailable = origIn && origOut
+        ? areDatesAvailable(origIn, origOut, availability.value)
+        : false
+
+    const ci  = datesAvailable ? origIn  : null
+    const co  = datesAvailable ? origOut : null
+
+    reservationDtoUpdate.value.checkIn  = ci
+    reservationDtoUpdate.value.checkOut = co
+    if (localReservation.value) {
+      localReservation.value = { ...localReservation.value, checkIn: ci ?? '', checkOut: co ?? '' }
+    }
+  }
+
+  // fetchAvailability(newId)
+})
+function areDatesAvailable(checkIn: string, checkOut: string, avail: AvailabilityDtoGet): boolean {
+  const cursor = new Date(checkIn)
+  const end    = new Date(checkOut)
+  while (cursor < end) {
+    const dateStr = cursor.toISOString().split('T')[0]!
+    if (!avail[dateStr]?.isAvailable) return false
+    cursor.setDate(cursor.getDate() + 1)
+  }
+  return true
+}
+
+// ── Заголовок ────────────────────────────────────────────────────────────────
 const heading = computed(() => {
   switch (mode.value) {
     case 'view':
@@ -76,12 +161,26 @@ const heading = computed(() => {
   }
 })
 
-// ── API-дії ─────────────────────────────────────────────────────────────────
+// ── API ──────────────────────────────────────────────────────────────────────
 async function fetchRooms() {
   try {
     rooms.value = await RoomAPI.getAll() as RoomDtoGet[]
   } catch (e) {
     console.error('Failed to fetch rooms', e)
+  }
+}
+
+async function fetchAvailability(roomId: number) {
+  const from = new Date()
+  const to = new Date()
+  to.setDate(to.getDate() + 90)
+  try {
+    availability.value = await RoomAPI.getAvailability(roomId, {
+      from: from.toISOString().split('T')[0],
+      to: to.toISOString().split('T')[0],
+    }) as AvailabilityDtoGet
+  } catch (e) {
+    console.error('Failed to fetch availability', e)
   }
 }
 
@@ -92,68 +191,127 @@ async function toList() {
 async function edit() {
   mode.value = 'edit'
   await fetchRooms()
+  const rid = localReservation.value?.room?.id
+  if (rid) fetchAvailability(rid)
 }
 
 async function cancelEdit() {
   mode.value = 'view'
-  // Скидаємо update-DTO до оригінальних значень
   reservationDtoUpdate.value = {
-    roomId:     props.reservation?.room?.id     ?? null,
-    guestCount: props.reservation?.guestCount   ?? null,
-    checkIn:    props.reservation?.checkIn      ?? null,
-    checkOut:   props.reservation?.checkOut     ?? null,
-    grandTotal: props.reservation?.grandTotal   ?? null,
+    roomId: props.reservation?.room?.id ?? null,
+    guestCount: props.reservation?.guestCount ?? null,
+    checkIn: props.reservation?.checkIn ?? null,
+    checkOut: props.reservation?.checkOut ?? null,
+    grandTotal: props.reservation?.grandTotal ?? null,
   }
-  localReservation.value = props.reservation ? { ...props.reservation } : null
+  localReservation.value = props.reservation ? {...props.reservation} : null
+  availability.value = {}
 }
 
 async function delete_() {
   if (!props.reservation) return
+  if (!confirm('Ви впевнені, що хочете видалити це бронювання?')) return
   try {
     await ReservationAPI.delete(props.reservation.id)
     await navigateTo('/admin/reservations')
   } catch (e) {
-    console.error('Failed to delete', e)
-    showError(e.message)
+    showError(e)
   }
 }
 
 async function save() {
   if (!props.reservation) return
+
+  const parsed = reservationUpdateSchema.safeParse(reservationDtoUpdate.value)
+  if (!parsed.success) {
+    showErrorMessage(parsed.error.errors[0]?.message ?? 'Unknown error')
+    return
+  }
+
+  console.log('Saving with DTO', parsed.data)
   try {
-    await ReservationAPI.update(props.reservation.id, reservationDtoUpdate.value)
+    await ReservationAPI.update(props.reservation.id, parsed.data)
     mode.value = 'view'
+    availability.value = {}
+
+    const updated = await ReservationAPI.getFull(props.reservation.id) as ReservationFullDtoGet
+    localReservation.value = updated
   } catch (e) {
-    console.error('Failed to save', e)
-    showError(e.message)
+    showError(e)
   }
 }
 
 async function create() {
+  const parsedReservation = reservationCreateSchema.safeParse(reservationDtoCreate.value)
+  if (!parsedReservation.success) {
+    showErrorMessage(parsedReservation.error.errors[0]?.message ?? 'Unknown error')
+    return
+  }
+
+  const parsedGuest = guestCreateSchema.safeParse(guestDtoCreate.value)
+  if (!parsedGuest.success) {
+    showErrorMessage(parsedGuest.error.errors[0]?.message ?? 'Unknown error')
+    return
+  }
+
+  console.log('Creating with DTO', parsedReservation.data, parsedGuest.data)
   try {
-    const result = await ReservationAPI.create(reservationDtoCreate.value, guestDtoCreate.value) as ReservationDtoGet
+    const result = await ReservationAPI.create(parsedReservation.data, parsedGuest.data) as ReservationDtoGet
     await navigateTo(`/admin/reservations/${result.id}`)
   } catch (e) {
-    console.error('Failed to create', e)
-    showError(e.message)
+    showError(e)
   }
 }
+async function cancelReservation(id: number | undefined) {
+  if (!id) return
+  if (!confirm('Ви впевнені, що хочете скасувати це бронювання?')) return
+  if (!props.reservation?.isActive) return
+  try {
+    await ReservationAPI.cancel(id)
+    console.log(`Cancel reservation ${id}`)
+    if (localReservation.value) {
+      localReservation.value.isActive = false
+    }
+  } catch (e) {
+    showError(e)
+  }
 
+}
 
-function showError(message: string) {
+function showErrorMessage(message: string) {
   errorMessage.value = message
   errorPopUpVisible.value = true
 }
-function showSuccess(message: string) {
-  successMessage.value = message
-  successPopUpVisible.value = true
+function showError(err: Error | any) {
+  console.error('Failed to create', err)
+  console.error(err.data)
+  const errMessage = extractErrorMessage(err.data)
+  console.error(errMessage)
+
+  errorMessage.value = errMessage
+  errorPopUpVisible.value = true
 }
+
 // ── Монтування ──────────────────────────────────────────────────────────────
 onMounted(() => {
   if (mode.value === 'create' || (mode.value === 'edit' && !rooms.value.length)) {
     fetchRooms()
   }
 })
+function extractErrorMessage(errData: any) {
+  if (!errData) return 'Unknown error';
+
+  if (errData.errors && typeof errData.errors === 'object') {
+    const messages = Object.values(errData.errors).flat();
+    if (messages.length > 0) return messages.join('; ');
+  }
+  if (typeof errData.error === 'string') {
+    return errData.error;
+  }
+
+  return 'Unknown error';
+}
+
 </script>
 
 <template>
@@ -161,19 +319,14 @@ onMounted(() => {
     <div class="content">
       <PageHeader :heading :mode>
         <template #buttons>
-          <!-- VIEW -->
           <button @click="toList" v-if="mode === 'view'" class="btn btn-ghost">До списку</button>
           <button @click="edit" v-if="mode === 'view' && reservation" class="btn btn-secondary">Редагувати</button>
           <button @click="delete_" v-if="mode === 'view' && reservation" class="btn btn-danger">Видалити</button>
-
-          <!-- EDIT -->
           <button @click="save" v-if="mode === 'edit'" class="btn btn-primary">Зберегти</button>
           <button @click="cancelEdit" v-if="mode === 'edit'" class="btn btn-secondary">Скасувати</button>
-
-          <!-- CREATE -->
           <button @click="create" v-if="mode === 'create'" class="btn btn-primary">Зберегти</button>
+          <button @click="toList" v-if="mode === 'create'" class="btn btn-ghost">Скасувати</button>
         </template>
-
         <template #secondary>
           <div class="page-meta" v-if="reservation">
             Створено: {{ reservation.createdAt }}
@@ -188,9 +341,13 @@ onMounted(() => {
               :mode
               :reservation-dto-update
               :reservation-dto-create
+              :availability="patchedAvailability"
+              :original-check-in="props.reservation?.checkIn ?? null"
+              :original-check-out="props.reservation?.checkOut ?? null"
               @update:reservation="applyUpdate"
               @update:reservationDtoUpdate="v => reservationDtoUpdate = { ...reservationDtoUpdate, ...v }"
               @update:reservationDtoCreate="v => reservationDtoCreate = { ...reservationDtoCreate, ...v }"
+              @cancel="cancelReservation"
           />
           <ReservationGuestCard
               :reservation="localReservation"
@@ -213,7 +370,7 @@ onMounted(() => {
       </div>
     </div>
 
-    <PopUp title="Помилка" type="error" v-model="errorPopUpVisible">{{errorMessage}}</PopUp>
+    <PopUp title="Помилка" type="error" v-model="errorPopUpVisible">{{ errorMessage }}</PopUp>
 
   </main>
 </template>
@@ -228,6 +385,7 @@ main {
 }
 
 .content {
+  width: 100%;
   max-width: 800px;
   margin: 0 auto;
   display: flex;

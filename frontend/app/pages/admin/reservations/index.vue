@@ -18,6 +18,7 @@ const roomNames = computed(() => {
 
 fetchRooms()
 fetchReservations()
+
 async function fetchRooms(params: ReservationsQueryParams = {}) {
   try {
     const result = await RoomAPI.getAll() as RoomDtoGet[]
@@ -50,7 +51,9 @@ async function viewReservation(id: number) {
   await navigateTo(`/admin/reservations/${id}`)
   console.log(`View reservation ${id}`)
 }
+
 async function cancelReservation(id: number) {
+  if (!confirm('Ви впевнені, що хочете скасувати це бронювання?')) return
   try {
     await ReservationAPI.cancel(id)
     console.log(`Cancel reservation ${id}`)
@@ -62,10 +65,13 @@ async function cancelReservation(id: number) {
   }
 
 }
+
 async function deleteReservation(id: number) {
+  if (!confirm('Ви впевнені, що хочете видалити це бронювання?')) return
   try {
     await ReservationAPI.delete(id)
     console.log(`Delete reservation ${id}`)
+
     await fetchReservations()
   } catch (e) {
     console.error(`Failed to delete reservation ${id}`, e)
@@ -81,10 +87,10 @@ async function deleteReservation(id: number) {
     <PageHeader heading="Бронювання">
       <template #buttons>
         <NuxtLink to="/admin/reservations/new" class="no-text-decoration">
-        <button class="style-1">
-          <Icon name="lucide:plus" size="1.5rem" color="white"/>
-          Нове бронювання
-        </button>
+          <button class="style-1">
+            <Icon name="lucide:plus" size="1.5rem" color="white"/>
+            Нове бронювання
+          </button>
         </NuxtLink>
       </template>
     </PageHeader>

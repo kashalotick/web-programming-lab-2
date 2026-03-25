@@ -50,19 +50,3 @@ export interface ReservationFullDtoGet {
     isActive: boolean;
 }
 
-
-export function restore(dto: ReservationDtoGet): Reservation {
-    return {
-        id: dto.id,
-        roomId: dto.roomId,
-        guestId: dto.guestId,
-        guestCount: dto.guestCount,
-        checkIn: new Date(dto.checkIn),
-        checkOut: new Date(dto.checkOut),
-        createdAt: new Date(dto.createdAt),
-        isActive: dto.isActive,
-        grandTotal: dto.grandTotal,
-    }
-}
-
-

@@ -75,7 +75,7 @@ export const ReservationAPI = {
   },
   async update(id: number, reservation: ReservationDtoUpdate) {
     const result = await $fetch(`/reservations/${id}`,{
-      method: 'POST',
+      method: 'PUT',
       baseURL: config.public.apiBase,
       headers: {
         'Administrator': 'true'

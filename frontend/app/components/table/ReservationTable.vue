@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type {Reservation} from "~/types/reservation";
 import type {ReservationsQueryParams} from "~/types/common";
-import Rooms from "~/pages/admin/rooms.vue";
 
 const props = defineProps<{
   roomNames: Record<number, string>

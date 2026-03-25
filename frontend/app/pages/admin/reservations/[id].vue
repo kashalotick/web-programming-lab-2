@@ -20,7 +20,7 @@ if (!data.value) {
 </script>
 
 <template>
-  <ReservationPage :id="route.params.id" :reservation="data!" mode="view"/>
+  <ReservationPage :reservation="data ?? null"/>
 </template>
 
 <style scoped>

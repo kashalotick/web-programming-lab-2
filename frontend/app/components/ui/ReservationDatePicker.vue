@@ -108,71 +108,12 @@ function handleReset() {
   } else {
     emit('update:checkOut', null)
   }
-  // emit('update:activeField', null)
 }
 
-// const calendarRef = useTemplateRef('calendar')
-// const handleClickOutside = (event: MouseEvent) => {
-//   const checkInEl = checkInTarget;
-//   const checkOutEl = checkOutTarget;
-//
-//   const calendarEl = calendarRef.value?.$el || calendarRef.value;
-//
-//   const clickedInsideInput =
-//       checkInEl?.contains(event.target) ||
-//       checkOutEl?.contains(event.target);
-//
-//   const clickedInsideCalendar = calendarEl?.contains?.(event.target);
-//
-//   if (!clickedInsideInput && !clickedInsideCalendar) {
-//     emit('update:activeField', null)
-//   }
-// }
 
 function close() {
   emit('update:activeField', null)
 }
-
-// function onEscape(event: KeyboardEvent) {
-//   if (event.key === 'Escape') {
-//     close()
-//   }
-// }
-//
-// const calendarStyle = ref({top: '0px', left: '0px'});
-// watch(() => activeField, (val) => {
-//   if (val) {
-//     nextTick(updatePosition);
-//   }
-// });
-//
-// function updatePosition() {
-//   const target = currentTarget.value;
-//   if (target) {
-//     const rect = target.getBoundingClientRect();
-//     const top = rect.bottom + window.scrollY;
-//     let left = rect.left + window.scrollX;
-//
-//     const bodyRect = document.body.getBoundingClientRect();
-//     if (left + 420 > bodyRect.width) {
-//       left = bodyRect.width - 420 - 10;
-//     }
-//
-//     calendarStyle.value = {
-//       top: `${top}px`,
-//       left: `${left}px`,
-//     };
-//   }
-// }
-
-// onMounted(() => {
-//   document.addEventListener('click', handleClickOutside)
-//   document.addEventListener('keydown', onEscape)
-// })
-// onUnmounted(() => {
-//   document.removeEventListener('click', handleClickOutside)
-//   document.removeEventListener('keydown', onEscape)
-// })
 
 </script>
 
