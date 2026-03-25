@@ -57,8 +57,9 @@ public class Program
         builder.Services.AddValidatorsFromAssemblyContaining<ReservationDtoUpdate>();
         builder.Services.AddValidatorsFromAssemblyContaining<TimePeriodFilter>();
         builder.Services.AddFluentValidationAutoValidation();
-        
+
         // services
+        builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
         builder.Services.AddScoped<GuestService>();
         builder.Services.AddScoped<RoomService>();
         builder.Services.AddScoped<ReservationService>();

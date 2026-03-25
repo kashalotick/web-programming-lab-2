@@ -12,5 +12,5 @@ docker compose -f compose.app.yaml up --build
 
 ## Run All
 ```shell
-docker -f compose.db.yaml compose -f compose.app.yaml up --build
+docker compose -f compose.db.yaml -f compose.app.yaml up --build
 ```
