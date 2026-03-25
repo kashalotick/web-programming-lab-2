@@ -9,5 +9,4 @@ public class Guest
     public string Email { get; set; }
     
     public ICollection<Reservation>? Reservations { get; set; }
-
 }
