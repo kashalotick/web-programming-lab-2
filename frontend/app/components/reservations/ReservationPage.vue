@@ -391,13 +391,12 @@ main {
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 0rem;
 }
 
 .form-layout {
   display: flex;
   gap: 2rem;
-  margin-top: 2rem;
 }
 
 .col-left {
