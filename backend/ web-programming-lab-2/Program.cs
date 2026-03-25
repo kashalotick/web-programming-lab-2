@@ -49,11 +49,15 @@ public class Program
         // automapper
         builder.Services.AddAutoMapper(cfg => { cfg.AddProfile<MappingProfile>(); }, typeof(MappingProfile));
         // validators
+        builder.Services.AddScoped<IValidator<ReservationCreateRequest>, ReservationCreateRequestValidator>();
+
         builder.Services.AddValidatorsFromAssemblyContaining<ReservationDtoCreate>();
+        builder.Services.AddValidatorsFromAssemblyContaining<ReservationCreateRequest>();
         builder.Services.AddValidatorsFromAssemblyContaining<GuestDtoCreate>();
         builder.Services.AddValidatorsFromAssemblyContaining<ReservationDtoUpdate>();
         builder.Services.AddValidatorsFromAssemblyContaining<TimePeriodFilter>();
         builder.Services.AddFluentValidationAutoValidation();
+        
         // services
         builder.Services.AddScoped<GuestService>();
         builder.Services.AddScoped<RoomService>();

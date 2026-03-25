@@ -37,6 +37,9 @@ public class ReservationsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<ReservationDtoGet>> Create([FromBody] ReservationCreateRequest dto)
     {
+        
+        return BadRequest(dto); // якщо валідація спрацювала — сюди не дійде
+        
         var result = await _reservationService.Create(dto);
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }

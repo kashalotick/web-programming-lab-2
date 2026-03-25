@@ -1,6 +1,16 @@
 ﻿using FluentValidation;
+using web_programming_lab_2.Entities.Guests;
 
 namespace web_programming_lab_2.Entities.Reservations;
+
+public class ReservationCreateRequestValidator : AbstractValidator<ReservationCreateRequest>
+{
+    public ReservationCreateRequestValidator()
+    {
+        RuleFor(x => x.Reservation).SetValidator(new ReservationValidatorCreate());
+        RuleFor(x => x.Guest).SetValidator(new GuestValidatorCreate());
+    }
+}
 
 public class ReservationValidatorCreate : AbstractValidator<ReservationDtoCreate>
 {
@@ -15,9 +25,13 @@ public class ReservationValidatorCreate : AbstractValidator<ReservationDtoCreate
         RuleFor(x => x.GuestCount)
             .GreaterThanOrEqualTo(1);
         RuleFor(x => x.GrandTotal)
-            .GreaterThan(0);
+            .GreaterThan(0)
+            .When(x => x.GrandTotal.HasValue)
+            .WithMessage("Grand total must be greater than 0.");
+        ;
     }
 }
+
 public class ReservationValidatorUpdate : AbstractValidator<ReservationDtoUpdate>
 {
     public ReservationValidatorUpdate()
