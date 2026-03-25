@@ -14,6 +14,7 @@ import ReservationRoomCard from "~/components/reservations/ReservationRoomCard.v
 import ReservationGuestCard from "~/components/reservations/ReservationGuestCard.vue"
 import PopUp from "~/components/ui/PopUp.vue";
 import {guestCreateSchema, reservationCreateSchema, reservationUpdateSchema} from "~/types/schemas/reservation-schema";
+import {formatFullDate} from "~/utils";
 
 const props = defineProps<{
   reservation: ReservationFullDtoGet | null
@@ -320,7 +321,7 @@ function extractErrorMessage(errData: any) {
       <PageHeader :heading :mode>
         <template #buttons>
           <button @click="toList" v-if="mode === 'view'" class="btn btn-ghost">До списку</button>
-          <button @click="edit" v-if="mode === 'view' && reservation" class="btn btn-secondary">Редагувати</button>
+          <button @click="edit" v-if="mode === 'view' && reservation?.isActive" class="btn btn-secondary">Редагувати</button>
           <button @click="delete_" v-if="mode === 'view' && reservation" class="btn btn-danger">Видалити</button>
           <button @click="save" v-if="mode === 'edit'" class="btn btn-primary">Зберегти</button>
           <button @click="cancelEdit" v-if="mode === 'edit'" class="btn btn-secondary">Скасувати</button>
@@ -329,7 +330,7 @@ function extractErrorMessage(errData: any) {
         </template>
         <template #secondary>
           <div class="page-meta" v-if="reservation">
-            Створено: {{ reservation.createdAt }}
+            Створено: {{ formatFullDate(new Date(reservation.createdAt)) }}
           </div>
         </template>
       </PageHeader>
@@ -386,7 +387,7 @@ main {
 
 .content {
   width: 100%;
-  max-width: 800px;
+  max-width: 820px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
